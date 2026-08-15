@@ -1,0 +1,49 @@
+# خريطة الملفات المسطّحة (من غير فولدرات)
+# الموقع مهيأ على الأسماء دي في main.js
+
+## راديو العربية (radio_*)
+radio_01_el_melouk.mp3              → الملوك
+radio_02_hina_el_qahira.mp3         → هنا القاهرة
+radio_03_el_wala_hamo.mp3           → الولا حمو
+radio_04_toul_ma_ana_ali.mp3        → طول ما أنا عالي
+radio_01_sharmoofers_single.mp3     → شارموفرز — سنجل
+radio_02_sharmoofers_arosty.mp3     → شارموفرز — عروستي
+radio_03_sharmoofers_khamsa_santy.mp3 → شارموفرز — خمسة سنتي
+radio_04_orange_ashab_elbatola.mp3  → أورنج — أصحاب البطولة
+radio_05_etisalat_demagh_tanya.mp3  → اتصالات — دماغ تانية
+radio_06_whatsapp_voice_1.mp3       → واتساب صوت 1
+radio_07_whatsapp_audio_2.mp3       → واتساب صوت 2
+
+## أصوات محطة البنزين (gas_*)
+gas_call_ring.mp3
+gas_call_answer.mp3
+gas_delivery_arrive.mp3
+gas_delivery_done.mp3
+gas_pump_done.mp3
+gas_pump_move.mp3
+gas_boss_pump_1.mp3 ... gas_boss_pump_5.mp3
+gas_boss_cabin.mp3
+gas_boss_office_cutscene.mp3
+gas_boss_office_cutscene2.mp3
+gas_fuel_alarm.mp3
+gas_fuel_empty.mp3
+
+## عينة لفل 1 (للمرجع / بناء ملف الشامل لاحقاً)
+level1_build.json
+level1_intro_cutscene.js
+level1_sound_car_door.wav
+level1_sound_engine_accel.wav
+level1_sound_engine_idle.wav
+level1_sound_engine_start.wav
+level1_sound_engine_stop.wav
+level1_README.txt
+pack_manifest.json
+
+## ملفات الموقع الأساسية
+index.html  main.js  style.css  server.html
+three.min.js  peerjs.min.js  jszip.min.js
+packs.json
+
+## ملاحظة GitHub Pages
+- كل الملفات جنب بعض (مفيش فولدرات)
+- لو عندك ملف شامل.zip حطه جنب index وسجّل اسمه في packs.json

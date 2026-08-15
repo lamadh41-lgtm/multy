@@ -1,0 +1,9 @@
+{
+  "version": 5,
+  "levels": [
+    {
+      "id": "level1_story",
+      "name": "Level 1"
+    }
+  ]
+}

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STORY MODE</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="ambient-bg" aria-hidden="true">
+    <div class="sky-aurora"></div>
+    <div class="stars"></div>
+    <div class="moon-glow"></div>
+    <div class="ocean">
+      <div class="wave wave-1"></div>
+      <div class="wave wave-2"></div>
+      <div class="wave wave-3"></div>
+      <div class="horizon-line"></div>
+    </div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-fx"></div>
+    <div class="scanline"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div id="loading-screen">
+    <div class="loader">
+      <div class="spinner"></div>
+      <h2>STORY MODE</h2>
+      <p id="loading-text">جاري التجهيز...</p>
+    </div>
+  </div>
+
+  <!-- NAME ENTRY (first launch / change name) -->
+  <div id="name-entry-screen" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h1 class="game-title">STORY MODE</h1>
+      <p class="subtitle">أدخل اسمك وصورتك</p>
+      <p style="color:#94a3b8;margin-bottom:16px;font-size:0.9rem;text-align:center">الاسم والصورة هيظهروا في اللوبي (الصورة تتحفظ على جهازك)</p>
+      <div class="profile-upload">
+        <div class="profile-preview-wrap">
+          <img id="profile-preview" class="profile-preview hidden" alt="صورتي" />
+          <div id="profile-placeholder" class="profile-placeholder">👤</div>
+        </div>
+        <label class="btn btn-ghost btn-sm profile-upload-btn" for="profile-file-input">رفع صورة شخصية</label>
+        <input type="file" id="profile-file-input" accept="image/*" class="hidden" />
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-profile" style="display:none">إزالة الصورة</button>
+      </div>
+      <input type="text" id="player-name-input" class="room-input" placeholder="اكتب اسمك هنا..." maxlength="16" autocomplete="off" />
+      <div class="menu-buttons" style="margin-top:18px">
+        <button class="btn btn-primary" id="btn-save-player-name">حفظ والدخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU -->
+  <div id="main-menu" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <div class="brand-badge">STORY ENGINE</div>
+      <h1 class="game-title">STORY MODE</h1>
+      <p class="subtitle">SPLIT • ONLINE • BUILD • STORY</p>
+      <div id="menu-player-row" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+        <div id="menu-player-avatar" class="avatar avatar-sm menu-avatar" style="display:none"></div>
+        <p id="menu-player-name" style="color:#00d4ff;font-weight:700;margin:0;text-align:center"></p>
+      </div>
+      <div class="menu-buttons">
+        <div style="display:flex;gap:10px;width:100%;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btn-story-mode" style="flex:1;min-width:140px">وضع القصة</button>
+          <button class="btn btn-ghost" id="btn-menu-graphics" style="flex:0 0 auto;min-width:110px" title="إعدادات الجرافيكس">🎨 الجرافيكس</button>
+        </div>
+        <button class="btn btn-accent" id="btn-build-mode">وضع البناء (المطور)</button>
+        <a class="btn btn-success" href="server.html" style="text-align:center;text-decoration:none">لوحة السيرفر (LAN)</a>
+        <button class="btn btn-ghost" id="btn-change-name" style="font-size:0.85rem">تغيير الاسم / الصورة</button>
+      </div>
+      <div class="info-box">
+        <p>💻 لاعب 1: كيبورد + ماوس | 🎮 لاعب 2: دراع أو كيبورد</p>
+        <p>الأونلاين = LAN محلي (بدون نت) أو LAN محلي أو cloudflared للإنترنت</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY CHOICE -->
+  <div id="story-choice" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:24px">وضع القصة</h2>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-split-mode">Split Screen (نفس الجهاز)</button>
+        <button class="btn btn-accent" id="btn-online-mode">أونلاين (سيرفر)</button>
+        <button class="btn btn-ghost" id="btn-story-back">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONLINE CONFIRM (legacy keep for JS compatibility, hidden flow) -->
+  <div id="online-confirm" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:12px">⚠️ الأونلاين مربوط بسيرفر القائد فقط</h2>
+      <p style="color:#94a3b8;margin-bottom:14px;line-height:1.7;font-size:0.95rem">
+        <strong style="color:#fbbf24">للإنترنت:</strong> شغّل lan_host ثم cloudflared tunnel<br>
+        <strong style="color:#00d4ff">المنضم:</strong> يكتب <strong>رابط القائد العام</strong> أو IP (LAN)
+      </p>
+      <p style="color:#94a3b8;margin-bottom:8px;font-size:0.9rem;text-align:right">عنوان السيرفر (IP للـ LAN فقط):</p>
+      <input type="text" id="confirm-server-ip" class="room-input" placeholder="مثال LAN: 192.168.1.10" value="127.0.0.1" />
+      <p id="server-check-status" style="text-align:center;margin:14px 0;font-weight:700;color:#94a3b8">اكتب العنوان ثم اضغط فحص</p>
+      <div class="menu-buttons">
+        <button class="btn btn-accent" id="btn-check-server" type="button">🔍 فحص السيرفر</button>
+        <button class="btn btn-primary" id="btn-online-ok" disabled>السيرفر مش شغال بعد</button>
+        <a class="btn btn-ghost" href="server.html" style="text-align:center;text-decoration:none">لوحة السيرفر (للقائد)</a>
+        <button class="btn btn-ghost" id="btn-online-cancel">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONLINE HUB: create / join -->
+  <div id="online-hub" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:12px">أونلاين</h2>
+      <p style="text-align:center;color:#94a3b8;margin-bottom:10px;font-size:0.9rem;line-height:1.6">
+        اختر إنشاء لوبي أو انضمام. <strong style="color:#30d158">LAN</strong> = شبكة محلية. <strong style="color:#fbbf24">Firebase</strong> = رومات وتزامن على الإنترنت فقط (الموقع نفسه على GitHub).
+      </p>
+      <p id="hub-server-status" style="text-align:center;color:#64748b;font-weight:600;margin-bottom:18px;font-size:0.85rem">القائد: شغّل python lan_host.py — مع Radmin استخدم IP الشبكة الافتراضية</p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-online-create">إنشاء لوبي</button>
+        <button class="btn btn-accent" id="btn-online-join">انضمام للوبي</button>
+        <button class="btn btn-ghost" id="btn-online-hub-back">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE ROOM -->
+  <div id="create-room" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:16px">إنشاء لوبي</h2>
+      <p style="color:#94a3b8;margin-bottom:10px;font-size:0.9rem">① اكتب رمز اللوبي</p>
+      <input type="text" id="create-code-input" class="room-input" placeholder="مثال: room123" maxlength="20" />
+
+      <p style="color:#94a3b8;margin:14px 0 8px;font-size:0.9rem">② عدد اللاعبين في الروم (شامل القائد)</p>
+      <div id="create-players-count" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <button type="button" class="btn btn-sm btn-ghost create-pcount-btn" data-count="2" style="flex:1;min-width:70px">2</button>
+        <button type="button" class="btn btn-sm btn-primary create-pcount-btn" data-count="3" style="flex:1;min-width:70px">3</button>
+        <button type="button" class="btn btn-sm btn-ghost create-pcount-btn" data-count="4" style="flex:1;min-width:70px">4</button>
+        <button type="button" class="btn btn-sm btn-ghost create-pcount-btn" data-count="6" style="flex:1;min-width:70px">6</button>
+        <button type="button" class="btn btn-sm btn-ghost create-pcount-btn" data-count="8" style="flex:1;min-width:70px">8</button>
+      </div>
+      <p id="create-players-hint" style="color:#67e8f9;font-size:0.8rem;margin-bottom:8px;font-weight:600">3 لاعبين = أنت (القائد) + 2 أصحاب</p>
+
+      <p style="color:#a78bfa;margin:14px 0 8px;font-size:0.85rem">③ ارفع ملف البيانات الشامل</p>
+      <input type="file" id="create-upload-input" accept=".zip,application/zip" class="hidden" />
+      <button class="btn btn-accent" id="btn-create-pick-zip" style="width:100%;margin-bottom:8px">📁 رفع الملف الشامل</button>
+      <p id="create-pack-status" style="color:#94a3b8;font-size:0.8rem;min-height:1.2em"></p>
+
+      <div style="margin-top:16px;border-top:1px solid #1e293b;padding-top:14px">
+        <p style="color:#fbbf24;margin-bottom:10px;font-size:0.9rem;font-weight:700">④ اختار نوع الاتصال (مهم)</p>
+        <p style="color:#64748b;font-size:0.8rem;margin-bottom:12px;line-height:1.5">
+          <strong style="color:#a78bfa">تبادل الأكواد (موصى به)</strong> = اتصال مباشر P2P — من غير بايثون ومن غير 127.0.0.1.
+          <strong style="color:#30d158">LAN</strong> اختياري فقط لو عندك lan_host.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <button type="button" class="btn btn-success" id="btn-create-mode-lan" style="flex:1;min-width:120px">🏠 LAN / Radmin</button>
+          <button type="button" class="btn btn-accent" id="btn-create-mode-cloud" style="flex:1;min-width:120px">☁️ cloudflared</button>
+          <button type="button" class="btn btn-ghost" id="btn-create-mode-codes" style="flex:1;min-width:120px">🔗 تبادل الأكواد</button>
+        </div>
+        <div id="create-lan-panel" class="hidden" style="margin-bottom:10px">
+          <p style="color:#30d158;font-size:0.85rem;margin-bottom:8px">شغّل: <code style="color:#67e8f9">python lan_host.py</code> — مع Radmin حط IP شبكة Radmin (مثل 26.x.x.x). بدون نت.</p>
+          <input type="text" id="create-ip-input" class="room-input" placeholder="IP المحلي أو Radmin أو 127.0.0.1" value="127.0.0.1" />
+          <p id="create-ip-status" style="font-size:0.8rem;margin-top:6px;font-weight:700;min-height:1.3em;color:#94a3b8"></p>
+          <p id="create-lan-hint" style="color:#64748b;font-size:0.75rem;margin-top:4px"></p>
+        </div>
+        <div id="create-cloud-panel" class="hidden" style="margin-bottom:10px">
+          <p style="color:#fbbf24;font-size:0.85rem;margin-bottom:8px">شغّل: <code style="color:#67e8f9">python lan_host.py</code> ثم <code style="color:#67e8f9">cloudflared tunnel --url http://localhost:27100</code> والصق الرابط هنا.</p>
+          <input type="text" id="create-cloud-input" class="room-input" placeholder="https://xxxx.trycloudflare.com" value="" />
+          <p id="create-cloud-status" style="font-size:0.8rem;margin-top:6px;font-weight:700;min-height:1.3em;color:#94a3b8"></p>
+        </div>
+        <div id="create-codes-panel" class="hidden" style="margin-bottom:10px">
+          <p style="color:#a78bfa;font-size:0.85rem;margin-bottom:8px;line-height:1.55">
+            <strong>تبادل أكواد WebRTC (من غير بايثون):</strong><br>
+            ⚠️ <strong style="color:#fbbf24">مهم:</strong> متفتحش index بالدبل كليك.<br>
+            شغّل <code style="color:#67e8f9">OPEN_GAME.bat</code> عند كل واحد، والعب من
+            <code style="color:#67e8f9">http://127.0.0.1:8080/</code><br>
+            (ده بس لفتح الصفحة محليًا — الاتصال بينكم P2P مش ماشي على السيرفر)<br>
+            ابعتوا الأكواد <strong>كملف txt</strong> مش نسخ من الشات.
+          </p>
+          <p id="create-codes-status" style="font-size:0.8rem;margin-top:6px;font-weight:700;min-height:1.3em;color:#94a3b8">بعد التأكيد هتظهر شاشة تبادل الأكواد</p>
+        </div>
+      </div>
+
+      <div class="menu-buttons" style="margin-top:16px">
+        <button class="btn btn-primary" id="btn-do-create" disabled>اختر نوع الاتصال أولاً</button>
+        <button class="btn btn-ghost" id="btn-create-back">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOIN ROOM -->
+  <div id="join-room" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:16px">انضمام للوبي</h2>
+
+      <p style="color:#fbbf24;margin-bottom:10px;font-size:0.9rem;font-weight:700">① نوع الاتصال</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <button type="button" class="btn btn-success" id="btn-join-mode-lan" style="flex:1;min-width:120px">🏠 LAN / Radmin</button>
+        <button type="button" class="btn btn-accent" id="btn-join-mode-cloud" style="flex:1;min-width:120px">☁️ cloudflared</button>
+        <button type="button" class="btn btn-ghost" id="btn-join-mode-codes" style="flex:1;min-width:120px">🔗 تبادل الأكواد</button>
+      </div>
+      <div id="join-lan-panel" class="hidden" style="margin-bottom:10px">
+        <p style="color:#30d158;font-size:0.85rem;margin-bottom:8px">حط IP جهاز القائد (محلي أو Radmin مثل 26.x.x.x) — بدون نت.</p>
+        <input type="text" id="join-ip-input" class="room-input" placeholder="192.168.1.10 أو IP Radmin" value="" />
+        <p id="join-ip-status" style="font-size:0.8rem;margin-top:6px;font-weight:700;min-height:1.3em;color:#94a3b8"></p>
+      </div>
+      <div id="join-cloud-panel" class="hidden" style="margin-bottom:10px">
+        <p style="color:#fbbf24;font-size:0.85rem;margin-bottom:8px">الصق رابط trycloudflare بتاع القائد.</p>
+        <input type="text" id="join-cloud-input" class="room-input" placeholder="https://xxxx.trycloudflare.com" value="" />
+        <p id="join-cloud-status" style="font-size:0.8rem;margin-top:6px;font-weight:700;min-height:1.3em;color:#94a3b8"></p>
+      </div>
+      <div id="join-codes-panel" class="hidden" style="margin-bottom:10px">
+        <p style="color:#a78bfa;font-size:0.85rem;margin-bottom:8px;line-height:1.55">
+          <strong>تبادل أكواد WebRTC (من غير بايثون):</strong><br>
+          1) اكتب نفس رمز اللوبي بتاع القائد (الملف الشامل اختياري)<br>
+          2) بعد التأكيد الصق <strong>كود العرض</strong> اللي القائد بعتُه<br>
+          3) هيتولد لك <strong>كود رد</strong> — ابعتُه للقائد<br>
+          نفس الواي فاي أو Radmin — اتصال P2P مباشر وأقل بنج ممكن.
+        </p>
+        <p id="join-codes-status" style="font-size:0.8rem;margin-top:6px;color:#94a3b8">بعد التأكيد هتظهر شاشة لصق كود القائد</p>
+      </div>
+
+      <p style="color:#a78bfa;margin:14px 0 8px;font-size:0.85rem">② رفع الملف الشامل <span style="color:#fbbf24">(اختياري للمنضم)</span></p>
+      <p style="color:#64748b;font-size:0.78rem;margin:-4px 0 8px;line-height:1.45">القائد بيرفع الشامل. أنت تقدر تدخل من غيره — اللفل هيتبعت من القائد عند البداية. لو حصل مشكلة ارفع الشامل هنا.</p>
+      <input type="file" id="join-upload-input" accept=".zip,application/zip" class="hidden" />
+      <button class="btn btn-accent" id="btn-join-pick-zip" style="width:100%;margin-bottom:8px">📁 رفع الملف الشامل (اختياري)</button>
+      <p id="join-upload-status" style="color:#94a3b8;font-size:0.8rem;min-height:1.2em">يمكنك التخطي والاعتماد على مزامنة القائد</p>
+
+      <div style="margin-top:16px;border-top:1px solid #1e293b;padding-top:14px">
+        <p style="color:#fbbf24;margin-bottom:8px;font-size:0.9rem;font-weight:700">③ الرومات المتاحة / الرمز</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button type="button" class="btn btn-sm btn-primary" id="btn-join-tab-code" style="flex:1">كتابة الرمز</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="btn-join-tab-list" style="flex:1">الرومات المتاحة</button>
+        </div>
+        <div id="join-by-code">
+          <input type="text" id="join-code-input" class="room-input" placeholder="رمز اللوبي" maxlength="20" />
+        </div>
+        <div id="join-by-list" class="hidden">
+          <button type="button" class="btn btn-sm btn-accent" id="btn-refresh-rooms" style="width:100%;margin-bottom:8px">🔄 تحديث قائمة الرومات</button>
+          <div id="rooms-list" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+          <p id="rooms-list-empty" style="color:#64748b;font-size:0.8rem;text-align:center;margin-top:8px">اضغط تحديث بعد ما القائد يعمل لوبي</p>
+        </div>
+      </div>
+
+      <div class="menu-buttons" style="margin-top:16px">
+        <button class="btn btn-primary" id="btn-do-join">تأكيد والانضمام</button>
+        <button class="btn btn-ghost" id="btn-join-back">رجوع</button>
+      </div>
+      <p style="color:#64748b;margin-top:14px;font-size:0.75rem;text-align:center">LAN يعتمد 100% على الشبكة المحلية — حتى لو مفيش نت. القائد يشغّل python lan_host.py</p>
+    </div>
+  </div>
+
+  <!-- LOBBY (shared split + online) -->
+  <div id="lobby-screen" class="screen hidden">
+    <div class="lobby-layout">
+      <div class="lobby-side" id="lobby-side-left"></div>
+      <div class="lobby-container glass-panel">
+      <h2 id="lobby-title">⚔️ LOBBY</h2>
+      <p id="lobby-code-display" style="color:#00d4ff;font-weight:700;margin-bottom:12px;display:none"></p>
+      <div class="players-list" id="players-list">
+        <div class="player-card host ready" id="player1-card">
+          <div class="avatar" id="p1-avatar">💻</div>
+          <div class="player-info">
+            <span class="name" id="p1-label">اللاعب 1</span>
+            <span class="status online" id="p1-status">READY</span>
+          </div>
+        </div>
+        <div class="player-card" id="player2-card">
+          <div class="avatar" id="p2-avatar">🎮</div>
+          <div class="player-info">
+            <span class="name" id="p2-label">اللاعب 2</span>
+            <span class="status" id="player2-status">في الانتظار...</span>
+          </div>
+        </div>
+      </div>
+      <p id="net-players-hint" style="text-align:center;color:#94a3b8;font-size:0.8rem;margin:6px 0;display:none">يمكن انضمام حتى 8 لاعبين على الشبكة</p>
+
+      <p style="text-align:center;margin:0 0 12px;color:#8e9aaf;font-size:0.85rem" id="gamepad-hint"></p>
+
+      <div class="level-select-box">
+        <label>اختيار اللفل</label>
+        <select id="lobby-level-select"><option value="">عالم فارغ</option></select>
+      </div>
+
+      <div class="custom-panel" id="custom-panel">
+        <h3 style="margin-bottom:10px;font-size:1rem;color:var(--gold)">تخصيص ملابسي</h3>
+        <p id="custom-owner-hint" style="color:#94a3b8;font-size:0.8rem;margin-bottom:8px">كل لاعب يعدّل ملابسه فقط</p>
+        <div class="custom-row" id="custom-player-row">
+          <label>اللاعب</label>
+          <select id="custom-player-select"><option value="0">اللاعب 1</option><option value="1">اللاعب 2</option></select>
+        </div>
+        <div class="custom-row"><label>قبعة</label><select id="custom-hat"></select><input type="color" id="color-hat" value="#333333" /></div>
+        <div class="custom-row"><label>نظارة</label><select id="custom-glasses"></select><input type="color" id="color-glasses" value="#111111" /></div>
+        <div class="custom-row"><label>تيشيرت</label><select id="custom-shirt"></select><input type="color" id="color-shirt" value="#1e40af" /></div>
+        <div class="custom-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+          <label style="min-width:70px">صورة الصدر</label>
+          <input type="file" id="custom-shirt-image" accept="image/*" class="hidden" />
+          <button type="button" class="btn btn-sm btn-accent" id="btn-shirt-image" style="flex:1">📷 رفع صورة على التيشيرت</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="btn-shirt-image-clear" style="flex:0">✕</button>
+        </div>
+        <p id="shirt-image-status" style="color:#64748b;font-size:0.75rem;margin:0 0 8px">الصورة هتظهر قدام على التيشيرت عندك وعند الباقي</p>
+        <div class="custom-row"><label>بنطلون</label><select id="custom-pants"></select><input type="color" id="color-pants" value="#1a252f" /></div>
+        <div class="custom-row"><label>جزمة</label><select id="custom-shoes"></select><input type="color" id="color-shoes" value="#111111" /></div>
+      </div>
+
+      <div class="lobby-actions" style="margin:14px 0 8px">
+        <button class="btn btn-primary" id="btn-start-game" disabled>▶ START GAME</button>
+        <button class="btn btn-ghost" id="btn-leave-lobby">رجوع</button>
+      </div>
+    </div>
+      <div class="lobby-side" id="lobby-side-right"></div>
+    </div>
+  </div>
+
+
+  <!-- BUILD MODE: offline / online choice -->
+  <div id="build-mode-choice" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:12px">وضع البناء</h2>
+      <p style="text-align:center;color:#94a3b8;margin-bottom:18px;font-size:0.9rem;line-height:1.6">
+        <strong style="color:#67e8f9">أوفلاين</strong> = بناء لوحدك (حفظ محلي).<br>
+        <strong style="color:#fbbf24">أونلاين</strong> = بناء مشترك مع صاحبك بتبادل الأكواد (من غير رفع شامل في البداية).
+      </p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-build-offline">💻 أوفلاين (بناء محلي)</button>
+        <button class="btn btn-accent" id="btn-build-online">🔗 أونلاين (بناء مشترك)</button>
+        <button class="btn btn-ghost" id="btn-build-choice-back">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILD ONLINE HUB -->
+  <div id="build-online-hub" class="screen hidden">
+    <div class="menu-container glass-panel">
+      <h2 style="margin-bottom:12px">بناء مشترك — أونلاين</h2>
+      <p style="text-align:center;color:#94a3b8;margin-bottom:14px;font-size:0.88rem;line-height:1.6">
+        نفس فكرة تبادل الأكواد. بعد الاتصال هتدخلوا وضع البناء مع بعض.<br>
+        شكلك عند صاحبك = <strong style="color:#fbbf24">صورة البروفايل</strong> (مش شخصية 3D).
+      </p>
+      <p style="color:#94a3b8;margin:0 0 8px;font-size:0.9rem;text-align:center">عدد اللاعبين في روم البناء (شامل القائد)</p>
+      <div id="build-players-count" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;justify-content:center">
+        <button type="button" class="btn btn-sm btn-ghost build-pcount-btn" data-count="2" style="flex:1;min-width:70px">2</button>
+        <button type="button" class="btn btn-sm btn-primary build-pcount-btn" data-count="3" style="flex:1;min-width:70px">3</button>
+        <button type="button" class="btn btn-sm btn-ghost build-pcount-btn" data-count="4" style="flex:1;min-width:70px">4</button>
+        <button type="button" class="btn btn-sm btn-ghost build-pcount-btn" data-count="6" style="flex:1;min-width:70px">6</button>
+        <button type="button" class="btn btn-sm btn-ghost build-pcount-btn" data-count="8" style="flex:1;min-width:70px">8</button>
+      </div>
+      <p id="build-players-hint" style="color:#67e8f9;font-size:0.8rem;margin-bottom:14px;font-weight:600;text-align:center">3 لاعبين = أنت (القائد) + 2 أصحاب</p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-build-create-room">👑 إنشاء روم بناء</button>
+        <button class="btn btn-accent" id="btn-build-join-room">🎮 انضمام لروم بناء</button>
+        <button class="btn btn-ghost" id="btn-build-online-back">رجوع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILD UI (same as before, condensed) -->
+  <div id="build-ui" class="hidden">
+    <div id="fly-indicator">✈️ بناء — WASD حركة | كليك وضع/تحديد/تحريك | F نظر | Ctrl ماوس حر | Esc قائمة | B مايك</div>
+    <div id="build-roster-hud" class="hidden" style="position:fixed;bottom:12px;right:12px;z-index:1400;min-width:90px;max-width:130px;background:rgba(8,12,24,0.75);border:1px solid rgba(34,211,238,0.25);border-radius:8px;padding:4px 6px;direction:rtl;color:#e2e8f0;font-size:0.65rem;pointer-events:none;opacity:0.85">
+      <div style="font-weight:800;color:#67e8f9;margin-bottom:6px">اللاعبون في البناء</div>
+      <div id="build-roster-list"></div>
+    </div>
+    <div class="build-toolbar">
+      <div class="toolbar-section toolbar-brand">
+        <h3>BUILD</h3>
+        <button class="tool-btn tool-btn-labeled active" data-tool="select" title="اختيار">
+          <span class="tb-ico">✥</span><span class="tb-lab">اختيار</span>
+        </button>
+        <button class="tool-btn tool-btn-labeled" data-tool="place" title="وضع">
+          <span class="tb-ico">＋</span><span class="tb-lab">وضع</span>
+        </button>
+        <button class="tool-btn tool-btn-labeled" data-tool="delete" title="الحذف المحيطي">
+          <span class="tb-ico">⌫</span><span class="tb-lab">حذف محيطي</span>
+        </button>
+      </div>
+      <div class="toolbar-section section-tabs">
+        <button class="section-btn active" data-section="static" type="button">🏛 الجماد</button>
+        <button class="section-btn" data-section="interactive" type="button">⚡ التفاعلي</button>
+      </div>
+      <div class="toolbar-section actions toolbar-actions-compact">
+        <button class="btn btn-sm btn-warning tool-btn-labeled" id="btn-respawn-places" title="تشيك بوينت / ريسبون">
+          <span class="tb-ico">📍</span><span class="tb-lab">تشيك بوينت</span>
+        </button>
+        <button class="btn btn-sm btn-accent tool-btn-labeled" id="btn-download-data" title="تحميل البيانات">
+          <span class="tb-ico">⬇️</span><span class="tb-lab">تحميل</span>
+        </button>
+        <button class="btn btn-sm btn-primary tool-btn-labeled" id="btn-upload-all" title="رفع الشامل" style="background:linear-gradient(135deg,#a855f7,#7c3aed)">
+          <span class="tb-ico">⬆️</span><span class="tb-lab">رفع شامل</span>
+        </button>
+        <button class="btn btn-sm btn-success tool-btn-labeled" id="btn-test-level" title="اختبار" style="background:linear-gradient(135deg,#22c55e,#16a34a);font-weight:700">
+          <span class="tb-ico">▶</span><span class="tb-lab">اختبار</span>
+        </button>
+        <button class="btn btn-sm btn-success tool-btn-labeled" id="btn-save-level" title="حفظ">
+          <span class="tb-ico">💾</span><span class="tb-lab">حفظ</span>
+        </button>
+        <input type="file" id="upload-all-input" accept=".zip" class="hidden" />
+        <button class="btn btn-sm tool-btn-labeled" id="btn-reset-build" title="احذف كل اللفلز وابدأ من جديد" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-weight:700">
+          <span class="tb-ico">🗑</span><span class="tb-lab">احذف وابدأ من جديد</span>
+        </button>
+        <button class="btn btn-sm btn-ghost tool-btn-labeled" id="btn-exit-build" title="خروج">
+          <span class="tb-ico">✕</span><span class="tb-lab">خروج</span>
+        </button>
+      </div>
+    </div>
+    <!-- Respawn mode choice panel -->
+    <div id="respawn-choice-panel" class="respawn-choice-panel hidden">
+      <div class="respawn-choice-title">تحديد أماكن ريسبون اللاعبين</div>
+      <div class="respawn-choice-btns">
+        <button class="btn btn-sm" id="btn-respawn-lan" style="background:linear-gradient(135deg,#30d158,#1a9e3f);color:#fff">وضع LAN (8 أماكن)</button>
+        <button class="btn btn-sm" id="btn-respawn-split" style="background:linear-gradient(135deg,#ff2d55,#c9184a);color:#fff">وضع Split (مكانين)</button>
+      </div>
+      <div class="respawn-choice-hint" id="respawn-mode-hint">اختر الوضع ثم اضغط على الأرض لوضع النقاط</div>
+      <button class="btn btn-sm btn-ghost" id="btn-respawn-done" style="margin-top:8px">إنهاء التحديد</button>
+    </div>
+    <div class="level-panel">
+      <div class="level-panel-header"><span>اللفلز</span><button class="btn btn-sm btn-primary" id="btn-new-level">+ جديد</button></div>
+      <div id="levels-list" class="levels-list"></div>
+      <div class="current-level-name">الحالي: <strong id="current-level-label">—</strong></div>
+      <div id="scripts-info" style="margin-top:8px;font-size:0.78rem;color:#8e9aaf"></div>
+    </div>
+    <div class="hierarchy-panel" id="hierarchy-panel">
+      <div class="level-panel-header"><span>الكائنات</span><button class="btn btn-sm btn-ghost" id="btn-refresh-hierarchy" style="padding:4px 8px;font-size:0.75rem">↻</button></div>
+      <div id="hierarchy-list" class="levels-list" style="max-height:320px"></div>
+      <div id="context-menu" class="context-menu hidden">
+        <div id="ctx-title" class="ctx-title">—</div>
+        <button id="ctx-goto">انتقال</button>
+        <button id="ctx-highlight">تعليم</button>
+        <button id="ctx-rename">إعادة تسمية</button>
+        <button id="ctx-move">تحريك</button>
+        <button id="ctx-delete">حذف</button>
+      </div>
+    </div>
+    <!-- لوحة الكتالوج يمين: أقسام → عناصر -->
+    <div class="build-sidebar-wrap" id="catalog-panel">
+      <div class="catalog-head">
+        <button type="button" id="catalog-back" class="catalog-back hidden" title="رجوع">→</button>
+        <div class="catalog-titles">
+          <div id="catalog-section-label">🏛 الجماد</div>
+          <div id="catalog-sub-label" class="catalog-sub hidden"></div>
+        </div>
+      </div>
+      <input type="text" id="build-search" placeholder="🔍 بحث..." />
+      <div id="catalog-categories" class="catalog-categories"></div>
+      <div class="build-sidebar hidden" id="build-sidebar"></div>
+    </div>
+    <div class="build-info">
+      <span id="object-count">0 عنصر</span><span>|</span><span id="current-tool">أداة: اختيار</span><span>|</span><span style="color:#00d4ff">Ctrl = طيران</span>
+    </div>
+  </div>
+
+  <!-- GAME UI -->
+  <div id="game-ui" class="hidden">
+    <div class="split-labels" id="split-labels">
+      <div class="split-label p1">💻 PLAYER 1</div>
+      <div class="split-label p2">🎮 PLAYER 2</div>
+    </div>
+    <div class="controls-hint">Esc = قائمة | Ctrl = إخفاء الماوس</div>
+  </div>
+
+  <!-- PAUSE MENU (per half or full) -->
+  <div id="pause-menu" class="pause-menu hidden">
+    <div class="pause-box">
+      <h3 id="pause-title">إيقاف مؤقت</h3>
+      <button class="btn btn-primary" id="btn-pause-resume">متابعة</button>
+      <button class="btn btn-accent" id="btn-pause-settings">الإعدادات</button>
+      <button class="btn btn-ghost" id="btn-pause-exit">خروج للرئيسية</button>
+    </div>
+  </div>
+
+  <!-- قائمة ESC في وضع البناء -->
+  <div id="build-pause-menu" class="pause-menu hidden">
+    <div class="pause-box">
+      <h3>وضع البناء</h3>
+      <button class="btn btn-primary" id="btn-build-pause-resume">متابعة البناء</button>
+      <button class="btn btn-accent" id="btn-build-pause-settings">الإعدادات</button>
+      <button class="btn btn-ghost" id="btn-build-pause-exit">خروج من وضع البناء</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL (over game, game still visible) -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="settings-box">
+      <h3>الإعدادات</h3>
+      <div class="setting-row"><label>الصوت</label><input type="range" id="set-volume" min="0" max="100" value="80" /></div>
+      <div class="setting-row"><label>حساسية الماوس</label><input type="range" id="set-sens" min="1" max="20" value="5" /></div>
+      <div class="setting-row"><label>عكس أفقي</label><input type="checkbox" id="set-invert-x" /></div>
+      <div class="setting-row"><label>عكس رأسي</label><input type="checkbox" id="set-invert-y" /></div>
+      <div class="setting-row"><label>حساسية الدراع</label><input type="range" id="set-gp-sens" min="1" max="20" value="5" /></div>
+      <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px">
+        <label>الجرافيكس</label>
+        <select id="set-graphics" class="room-input" style="width:100%;text-align:right;padding:10px 12px">
+          <option value="0">0 — الجرافيكس الزباله الحقير العباسي الاماوي الشمبساوي (فريمات صاروخية)</option>
+          <option value="1">1 — الجرافيكس الحقير (أعلى فريمات)</option>
+          <option value="2">2 — جرافيكس منخفض</option>
+          <option value="3" selected>3 — جرافيكس متوسط</option>
+          <option value="4">4 — جرافيكس عالي</option>
+          <option value="5">5 — الجرافيكس الأسطوري</option>
+        </select>
+        <p id="graphics-hint" style="color:#64748b;font-size:0.75rem;margin:0">متوسط — توازن بين الشكل والأداء</p>
+      </div>
+      <button class="btn btn-sm btn-primary" id="btn-cam-settings" style="width:100%;margin:8px 0">ضبط الكاميرا</button>
+      <div id="cam-settings" class="hidden" style="margin-top:8px">
+        <div class="setting-row"><label>بعد الكاميرا</label><input type="range" id="set-cam-dist" min="3" max="15" value="5.8" step="0.1" /></div>
+        <div class="setting-row"><label>ارتفاع الكاميرا</label><input type="range" id="set-cam-h" min="0.5" max="5" value="2.4" step="0.1" /></div>
+        <div class="setting-row"><label>الأفقي (يمين/شمال)</label><input type="range" id="set-cam-side" min="-3" max="3" value="0" step="0.1" /></div>
+        <div style="font-size:0.8rem;color:#94a3b8;margin:10px 0 4px;font-weight:700">ضبط كاميرا التصويب</div>
+        <div class="setting-row"><label>التصويب — أفقي (يسار ← 0 → يمين)</label><input type="range" id="set-aim-side" min="-1.5" max="1.5" value="0.7" step="0.05" /></div>
+        <div class="setting-row"><label>التصويب — رأسي (ارتفاع)</label><input type="range" id="set-aim-lift" min="0" max="1.5" value="0.85" step="0.05" /></div>
+        <div class="setting-row"><label>التصويب — قرب الكاميرا</label><input type="range" id="set-aim-close" min="0" max="2" value="0.9" step="0.05" /></div>
+        <button type="button" class="btn btn-accent" id="btn-aim-live-edit" style="width:100%;margin-top:8px">تعديل كاميرا التصويب (تجربة مباشرة)</button>
+      </div>
+      <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:10px">
+        <label>الدقة (Resolution)</label>
+        <select id="set-resolution" class="room-input" style="width:100%;text-align:right;padding:10px 12px">
+          <option value="native">أصلي (شاشة الجهاز)</option>
+          <option value="1920x1080">1920 × 1080</option>
+          <option value="1600x900">1600 × 900</option>
+          <option value="1366x768">1366 × 768</option>
+          <option value="1280x720">1280 × 720</option>
+          <option value="1024x576">1024 × 576</option>
+        </select>
+      </div>
+      <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:8px">
+        <label>وضع النافذة</label>
+        <select id="set-window-mode" class="room-input" style="width:100%;text-align:right;padding:10px 12px">
+          <option value="windowed">نافذة (Windowed)</option>
+          <option value="fullscreen">ملء الشاشة (Fullscreen)</option>
+        </select>
+      </div>
+      <div class="setting-row" style="margin-top:8px">
+        <label>عرض عداد الفريمات (FPS)</label>
+        <input type="checkbox" id="set-show-fps" checked />
+      </div>
+      <div id="controls-remap" style="margin-top:10px">
+        <h4 style="font-size:0.9rem;color:#94a3b8;margin-bottom:6px">التحكم</h4>
+        <div id="kb-controls" class="remap-list"></div>
+        <div id="gp-controls" class="remap-list" style="margin-top:8px"></div>
+      </div>
+      <button class="btn btn-ghost" id="btn-settings-back" style="width:100%;margin-top:12px">رجوع</button>
+    </div>
+  </div>
+
+  <!-- لوحة تعديل كاميرا التصويب المباشرة -->
+  <div id="aim-edit-overlay" class="hidden" style="position:fixed;left:12px;bottom:80px;z-index:2500;background:rgba(8,12,24,0.95);border:1px solid rgba(34,211,238,0.45);border-radius:14px;padding:12px 14px;min-width:280px;direction:rtl;color:#e2e8f0;pointer-events:auto;user-select:none">
+    <div style="font-weight:800;margin-bottom:8px;color:#67e8f9">تعديل كاميرا التصويب</div>
+    <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:8px">حرّك السلايدرز وشوف التغيير — مفيش إطلاق نار هنا</div>
+    <div class="setting-row" style="pointer-events:auto"><label style="font-size:0.8rem">أفقي</label><input type="range" id="aim-live-side" min="-1.5" max="1.5" value="0.7" step="0.05" style="width:150px;pointer-events:auto" /></div>
+    <div class="setting-row" style="pointer-events:auto"><label style="font-size:0.8rem">رأسي</label><input type="range" id="aim-live-lift" min="0" max="1.5" value="0.85" step="0.05" style="width:150px;pointer-events:auto" /></div>
+    <div class="setting-row" style="pointer-events:auto"><label style="font-size:0.8rem">قرب</label><input type="range" id="aim-live-close" min="0" max="2" value="0.9" step="0.05" style="width:150px;pointer-events:auto" /></div>
+    <button type="button" class="btn btn-success" id="btn-aim-confirm" style="width:100%;margin-top:10px;pointer-events:auto">تأكيد والرجوع للإعدادات</button>
+  </div>
+
+  <div id="net-ping-hud" class="net-ping-hud hidden" title="جودة الاتصال">
+    <div class="wifi-bars" id="wifi-bars">
+      <span class="wb" data-n="1"></span>
+      <span class="wb" data-n="2"></span>
+      <span class="wb" data-n="3"></span>
+      <span class="wb" data-n="4"></span>
+      <span class="wb" data-n="5"></span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;direction:ltr">
+      <div class="ping-ms" id="ping-ms">-- ms</div>
+      <div class="fps-ms" id="fps-counter">-- FPS</div>
+    </div>
+  </div>
+  <div id="fps-hud" class="fps-hud" title="الفريمات">
+    <span id="fps-counter-solo">-- FPS</span>
+  </div>
+  <button type="button" id="mic-hud-btn" class="mic-hud-btn mic-off hidden" title="المايك (B)">
+    <span class="mic-ico">🎤</span>
+    <span id="mic-hud-label">OFF</span>
+  </button>
+  <div id="toast-container"></div>
+  <!-- Vehicle HUD -->
+  <div id="vehicle-hud" class="hidden">
+    <div class="vh-modes">
+      <button type="button" class="vh-mode active" id="vh-mode-normal" data-mode="normal">عادي</button>
+      <button type="button" class="vh-mode" id="vh-mode-sport" data-mode="sport">سبورت</button>
+    </div>
+    <div class="vh-gauge">
+      <div class="vh-speed-wrap"><span id="vh-speed">0</span><small>كم/س</small></div>
+      <div class="vh-gear-wrap" id="vh-gear-box">G<span id="vh-gear">1</span></div>
+      <div class="vh-engine" id="vh-engine">OFF</div>
+    </div>
+    <div class="vh-fuel-wrap" id="vh-fuel-wrap">
+      <div class="vh-fuel-label">بنزين <span id="vh-fuel-pct">100</span>%</div>
+      <div class="vh-fuel-bar"><div id="vh-fuel-fill"></div></div>
+    </div>
+    <div class="vh-gears" id="vh-gears">
+      <button type="button" class="vh-gbtn active" id="vh-gear-1" data-gear="1">1</button>
+      <button type="button" class="vh-gbtn" id="vh-gear-2" data-gear="2">2</button>
+      <button type="button" class="vh-gbtn" id="vh-gear-3" data-gear="3">3</button>
+      <button type="button" class="vh-gbtn" id="vh-gear-4" data-gear="4">4</button>
+      <button type="button" class="vh-gbtn" id="vh-gear-5" data-gear="5">5</button>
+    </div>
+    <div class="vh-manual hidden" id="vh-manual">
+      <div class="vh-manual-title">مانوال</div>
+      <div class="vh-manual-needle" id="vh-manual-needle"></div>
+      <div class="vh-manual-scale">0 — 120</div>
+    </div>
+    <div class="vh-hints">
+      <div><b>H</b> محرك</div>
+      <div><b>W/S</b> حركة</div>
+      <div><b>A/D</b> كوتش</div>
+      <div><b>SPACE</b> فرامل / دريفت</div>
+      <div><b>K</b> كلاكس</div>
+      <div><b>J/M</b> راديو</div>
+      <div><b>F</b> نزول</div>
+    </div>
+  </div>
+  <!-- Generic in-site choice modal (no Chrome prompt) -->
+  <div id="choice-modal" class="hidden">
+    <div class="cfm-box">
+      <div class="cfm-title" id="choice-modal-title">اختر</div>
+      <div class="cfm-row" id="choice-modal-options"></div>
+      <button type="button" class="btn btn-ghost" id="choice-modal-cancel" style="margin-top:12px;width:100%">إلغاء</button>
+    </div>
+  </div>
+  <!-- Fuel place modal -->
+  <div id="car-fuel-modal" class="hidden">
+    <div class="cfm-box">
+      <div class="cfm-title">نوع البنزين للعربية</div>
+      <div class="cfm-row">
+        <button type="button" class="btn btn-primary" id="cfm-infinite">بنزين مالانهاية</button>
+        <button type="button" class="btn btn-accent" id="cfm-limited">بنزين محدد</button>
+      </div>
+      <div id="cfm-consume" class="cfm-consume hidden">
+        <div class="cfm-sub">استهلاك البنزين</div>
+        <div class="cfm-row">
+          <button type="button" class="btn btn-sm" data-consume="low">قليل</button>
+          <button type="button" class="btn btn-sm" data-consume="mid">متوسط</button>
+          <button type="button" class="btn btn-sm" data-consume="high">كبير</button>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost" id="cfm-cancel" style="margin-top:10px;width:100%">إلغاء</button>
+    </div>
+  </div>
+  <!-- Refuel loading -->
+  <div id="refuel-overlay" class="hidden">
+    <div class="rf-box">
+      <div class="rf-title">تعبئة بنزين...</div>
+      <div class="rf-bar"><div id="rf-fill"></div></div>
+      <div id="rf-sec">10 ث</div>
+    </div>
+  </div>
+  <!-- Multi interactive tip (top-right, non-blocking) -->
+  <div id="multi-interact-tip" class="hidden">
+    <div class="mi-tip-title">أكثر من كائن تفاعلي</div>
+    <div class="mi-tip-text">كليك شمال لاختيار اللي هتتحكم فيه</div>
+  </div>
+  <!-- HACK (authorized names only) -->
+  <button id="hack-btn" type="button" class="hidden">هاك بتنجاني</button>
+  <div id="hack-panel" class="hidden">
+    <div class="hack-box">
+      <div class="hack-title">هاك بتنجاني</div>
+      <div class="hack-row">
+        <span>الطيران</span>
+        <button type="button" class="btn btn-sm" id="hack-fly-toggle">تفعيل</button>
+      </div>
+      <p class="hack-hint">Space↑ · Shift↓ · WASD حركة هواء</p>
+      <div class="hack-row" style="margin-top:12px"><span>الانتقال للاعبين</span></div>
+      <div id="hack-players" class="hack-players"></div>
+      <button type="button" class="btn btn-ghost btn-sm" id="hack-close" style="width:100%;margin-top:12px">إغلاق</button>
+    </div>
+  </div>
+  <!-- Fuel empty / delivery -->
+  <div id="fuel-empty-msg" class="hidden">
+    <div class="fuel-empty-box">
+      <div>اتصل بالعامل في البنزينة</div>
+      <div class="fuel-empty-hint">اضغط <b>E</b> للاتصال</div>
+    </div>
+  </div>
+  <div id="delivery-wait" class="hidden">
+    <div class="delivery-wait-box">
+      <div class="spinner-sm"></div>
+      <span id="delivery-wait-text">بانتظار العامل...</span>
+    </div>
+  </div>
+  <!-- Gas station place modal -->
+  <div id="gas-place-modal" class="hidden">
+    <div class="cfm-box" style="max-width:520px;max-height:85vh;overflow:auto">
+      <div class="cfm-title">محطة بنزين — الأصوات</div>
+      <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;text-align:center">اختر مصدر الأصوات قبل وضع المحطة</p>
+      <div class="cfm-row" style="flex-direction:column;gap:8px">
+        <button type="button" class="btn btn-primary" id="gas-voice-natural">الأصوات الطبيعية (المرفقة)</button>
+        <button type="button" class="btn btn-accent" id="gas-voice-custom">أضف من عندك</button>
+      </div>
+      <div id="gas-custom-list" class="hidden" style="margin-top:14px;text-align:right;direction:rtl"></div>
+      <button type="button" class="btn btn-success" id="gas-place-confirm" style="width:100%;margin-top:14px">تأكيد ووضع المحطة</button>
+      <button type="button" class="btn btn-ghost" id="gas-place-cancel" style="width:100%;margin-top:8px">إلغاء</button>
+    </div>
+  </div>
+  <!-- Crosshair -->
+  <div id="crosshair" class="hidden">+</div>
+  <!-- Interaction prompt (play mode) -->
+  <div id="interact-prompt" class="hidden">
+    <div class="ip-key" id="ip-key">F</div>
+    <div class="ip-text" id="ip-text">للدخول</div>
+  </div>
+  <!-- Vehicle radio panel -->
+  <div id="car-radio" class="hidden">
+    <div class="radio-head">
+      <span>🎵 راديو العربية</span>
+      <button type="button" id="radio-close" title="إغلاق (N)">✕</button>
+    </div>
+    <div id="radio-tracks"></div>
+    <div class="radio-now">
+      <div id="radio-title">—</div>
+      <input type="range" id="radio-seek" min="0" max="1000" value="0" />
+      <div class="radio-times"><span id="radio-t0">0:00</span><span id="radio-t1">0:00</span></div>
+    </div>
+  </div>
+  <div id="area-delete-rect" class="hidden"></div>
+  <div id="obj-toolbar" class="obj-toolbar hidden">
+    <button data-action="move" title="تحريك">✥</button>
+    <button data-action="rotate" title="دوران">🔄</button>
+    <button data-action="confirm-rotate" title="تأكيد الدوران" class="confirm-rotate-btn hidden" style="background:#16a34a;color:#fff;font-weight:700">✓ تأكيد</button>
+    <button data-action="scale" title="تكبير">⤢</button>
+    <button data-action="scale-uniform" title="تكبير كلي" class="scale-mode-btn hidden">⬛ كلي</button>
+    <button data-action="scale-axis" title="تكبير محاور" class="scale-mode-btn hidden">XYZ</button>
+    <button data-action="duplicate" title="نسخ">➕</button>
+    <button data-action="delete" title="حذف">🗑️</button>
+  </div>
+  <div id="inventory-bar" class="inventory-bar hidden"></div>
+  <div id="phone-ui" class="phone-ui hidden"></div>
+
+
+  <!-- تلميح ثابت أعلى اليمين -->
+  <div id="mouse-interact-tip" class="hidden">اضغط بالماوس على الأشياء للتفاعل معها مثل السيارة والجراج والمضخات...</div>
+  <!-- قائمة أزرار بسيطة أسفل الشاشة (سياقية) -->
+  <div id="controls-help-bar" class="hidden"></div>
+
+  <canvas id="game-canvas"></canvas>
+
+
+  <!-- WebRTC manual SDP exchange overlay -->
+  
+  <!-- رفع الشامل في بناء أونلاين -->
+  <div id="build-pack-overlay" class="hidden" style="position:fixed;inset:0;z-index:2600;background:rgba(2,6,23,0.96);display:flex;align-items:center;justify-content:center;padding:16px">
+    <div class="glass-panel" style="max-width:520px;width:100%;padding:22px 20px;direction:rtl;text-align:center">
+      <h2 id="build-pack-title" style="margin-bottom:10px;color:#fbbf24">📁 الملف الشامل</h2>
+      <p id="build-pack-desc" style="color:#94a3b8;font-size:0.9rem;line-height:1.6;margin-bottom:14px"></p>
+      <input type="file" id="build-pack-input" accept=".zip,application/zip" class="hidden" />
+      <button type="button" class="btn btn-accent" id="btn-build-pack-pick" style="width:100%;margin-bottom:10px">📁 اختيار الملف الشامل</button>
+      <p id="build-pack-status" style="color:#67e8f9;font-size:0.85rem;min-height:1.4em;font-weight:700"></p>
+      <div id="build-pack-spinner" class="hidden" style="margin:12px auto;width:36px;height:36px;border:3px solid #1e293b;border-top-color:#67e8f9;border-radius:50%;animation:spin 0.9s linear infinite"></div>
+    </div>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+  <div id="rtc-exchange-overlay" class="hidden" style="position:fixed;inset:0;z-index:2500;background:#020617;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
+    <div class="glass-panel" style="max-width:640px;width:100%;max-height:none;overflow-y:visible;padding:22px 20px;margin:12px auto;">
+      <div id="rtc-ex-role-chip" style="display:inline-block;padding:6px 14px;border-radius:999px;font-weight:800;font-size:0.85rem;margin-bottom:12px;background:rgba(167,139,250,0.15);color:#c4b5fd;border:1px solid rgba(167,139,250,0.35)">تبادل الاتصال</div>
+      <h2 id="rtc-ex-title" style="margin-bottom:8px;color:#a78bfa">🔗 تبادل أكواد الاتصال</h2>
+      <p id="rtc-ex-desc" style="color:#94a3b8;font-size:0.88rem;line-height:1.55;margin-bottom:14px"></p>
+
+      <div id="rtc-ex-host-offer-block" class="hidden" style="margin-bottom:14px">
+        <label style="display:block;color:#67e8f9;font-weight:700;margin-bottom:6px;font-size:0.85rem">① كودك (ابعتُه لصاحبك) — كود العرض</label>
+        <textarea id="rtc-ex-host-offer" readonly rows="5" style="width:100%;font-family:monospace;font-size:0.72rem;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:10px;direction:ltr;text-align:left"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm btn-accent" id="rtc-ex-copy-offer" style="flex:1;min-width:140px">📋 نسخ كود العرض</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="rtc-ex-dl-offer" style="flex:1;min-width:140px">💾 تحميل كملف</button>
+        </div>
+        <p style="color:#fbbf24;font-size:0.75rem;margin-top:6px;line-height:1.4">لو واتساب بيقطع الكود: ابعت <strong>الملف</strong> بدل النسخ، أو انسخ من أول SM1. لآخر حرف.</p>
+      </div>
+
+      <div id="rtc-ex-host-answer-block" class="hidden" style="margin-bottom:14px">
+        <label style="display:block;color:#fbbf24;font-weight:700;margin-bottom:6px;font-size:0.85rem">② الصق هنا كود الرد من صاحبك</label>
+        <textarea id="rtc-ex-host-answer" rows="5" placeholder="الصق كود الرد هنا..." style="width:100%;font-family:monospace;font-size:0.72rem;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:10px;direction:ltr;text-align:left"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm btn-primary" id="rtc-ex-apply-answer" style="flex:1;min-width:140px">✓ تأكيد كود الرد</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="rtc-ex-upload-answer" style="flex:1;min-width:140px">📁 رفع ملف الرد</button>
+        </div>
+        <input type="file" id="rtc-ex-upload-answer-input" accept=".txt,text/plain" class="hidden" />
+      </div>
+
+      <div id="rtc-ex-join-offer-block" class="hidden" style="margin-bottom:14px">
+        <label style="display:block;color:#fbbf24;font-weight:700;margin-bottom:6px;font-size:0.85rem">① الصق كود العرض اللي القائد بعتُه</label>
+        <textarea id="rtc-ex-join-offer" rows="5" placeholder="الصق كود العرض هنا..." style="width:100%;font-family:monospace;font-size:0.72rem;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:10px;direction:ltr;text-align:left"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm btn-primary" id="rtc-ex-make-answer" style="flex:1;min-width:140px">توليد كود الرد</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="rtc-ex-upload-offer" style="flex:1;min-width:140px">📁 رفع ملف العرض</button>
+        </div>
+        <input type="file" id="rtc-ex-upload-offer-input" accept=".txt,text/plain" class="hidden" />
+        <p style="color:#fbbf24;font-size:0.75rem;margin-top:6px">لو فشل التوليد: ارفع ملف الكود من القائد بدل اللصق.</p>
+      </div>
+
+      <div id="rtc-ex-join-answer-block" class="hidden" style="margin-bottom:14px">
+        <label style="display:block;color:#67e8f9;font-weight:700;margin-bottom:6px;font-size:0.85rem">② كود الرد — ابعتُه للقائد</label>
+        <textarea id="rtc-ex-join-answer" readonly rows="5" style="width:100%;font-family:monospace;font-size:0.72rem;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:10px;direction:ltr;text-align:left"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm btn-accent" id="rtc-ex-copy-answer" style="flex:1;min-width:140px">📋 نسخ كود الرد</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="rtc-ex-dl-answer" style="flex:1;min-width:140px">💾 تحميل كملف</button>
+        </div>
+        <p style="color:#94a3b8;font-size:0.8rem;margin-top:8px">استنى القائد يلصق/يرفع الكود — الاتصال هيفتح لوحده. ابعت الملف أفضل من واتساب نص.</p>
+      </div>
+
+      <p id="rtc-ex-status" style="color:#a78bfa;font-weight:700;font-size:0.85rem;min-height:1.3em;margin:10px 0"></p>
+      <button type="button" class="btn btn-ghost" id="rtc-ex-cancel" style="width:100%">إلغاء ورجوع</button>
+    </div>
+  </div>
+
+  <script src="three.min.js"></script>
+  <script src="jszip.min.js"></script>
+  <script src="peerjs.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script>
+    window.__FIREBASE_CONFIG__ = {
+      apiKey: "AIzaSyB9k3MT42e_7fUej6E3p3DmQdGr5Cml4dY",
+      authDomain: "game-4ac15.firebaseapp.com",
+      projectId: "game-4ac15",
+      storageBucket: "game-4ac15.firebasestorage.app",
+      messagingSenderId: "587500763764",
+      appId: "1:587500763764:web:688c41b4fe1d826edd2f21",
+      measurementId: "G-7G1EKGLPCC",
+      databaseURL: "https://game-4ac15-default-rtdb.firebaseio.com"
+    };
+  </script>
+  <script src="main.js"></script>
+</body>
+</html>

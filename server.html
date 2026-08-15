@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STORY MODE — لوحة السيرفر</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background: radial-gradient(ellipse at top, #121a2e 0%, #070a12 70%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 {
+      font-size: 1.75rem;
+      color: #00d4ff;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .sub {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 28px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: rgba(12, 18, 32, 0.92);
+      border: 1px solid rgba(0, 212, 255, 0.22);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      color: #fbbf24;
+      margin-bottom: 12px;
+    }
+    .btn {
+      display: inline-block;
+      font-family: inherit;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 22px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-start {
+      background: linear-gradient(135deg, #30d158, #1a9e3f);
+      color: #fff;
+      width: 100%;
+      font-size: 1.15rem;
+      box-shadow: 0 8px 24px rgba(48, 209, 88, 0.3);
+    }
+    .btn-stop {
+      background: linear-gradient(135deg, #ff2d55, #c9184a);
+      color: #fff;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #2a3548;
+      color: #94a3b8;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn-link {
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      color: #fff;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    .btn-copy {
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      color: #fff;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+    .status-pill .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #64748b;
+    }
+    .status-off { background: rgba(100,116,139,0.2); color: #94a3b8; }
+    .status-on { background: rgba(48,209,88,0.15); color: #30d158; }
+    .status-on .dot { background: #30d158; box-shadow: 0 0 10px #30d158; }
+    .status-err { background: rgba(255,45,85,0.15); color: #ff6b8a; }
+    .status-err .dot { background: #ff2d55; }
+    .row {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .row input {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #2a3548;
+      background: #0a0e17;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .log {
+      background: #05070c;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 14px;
+      height: 220px;
+      overflow-y: auto;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: #a5f3fc;
+      white-space: pre-wrap;
+      direction: ltr;
+      text-align: left;
+    }
+    .log .ok { color: #4ade80; }
+    .log .warn { color: #fbbf24; }
+    .log .err { color: #fb7185; }
+    .log .info { color: #7dd3fc; }
+    .big-code {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #00d4ff;
+      padding: 16px;
+      border: 2px dashed rgba(0,212,255,0.4);
+      border-radius: 14px;
+      margin: 12px 0;
+      background: rgba(0,212,255,0.06);
+    }
+    .share-box {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(48, 209, 88, 0.08);
+      border: 1px solid rgba(48, 209, 88, 0.35);
+    }
+    .share-label {
+      color: #86efac;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .share-url {
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #f0fdf4;
+      background: #052e16;
+      border: 1px solid #166534;
+      border-radius: 10px;
+      padding: 14px 12px;
+      word-break: break-all;
+      user-select: all;
+      cursor: pointer;
+    }
+    .share-hint {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      line-height: 1.55;
+    }
+    .steps {
+      color: #cbd5e1;
+      line-height: 1.85;
+      font-size: 0.95rem;
+      padding-right: 6px;
+    }
+    .steps li { margin-bottom: 6px; }
+    .hint {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .ip-list {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+    }
+    .ip-chip {
+      background: rgba(0,212,255,0.12);
+      border: 1px solid rgba(0,212,255,0.35);
+      color: #67e8f9;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: Consolas, monospace;
+      cursor: pointer;
+    }
+    .ip-chip:hover { background: rgba(0,212,255,0.22); }
+    .ip-chip.active {
+      background: rgba(48, 209, 88, 0.25);
+      border-color: #30d158;
+      color: #86efac;
+    }
+    .ip-chip.radmin {
+      border-color: #fbbf24;
+      color: #fcd34d;
+    }
+    code { color: #67e8f9; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>لوحة سيرفر STORY MODE</h1>
+    <p class="sub">
+      شغّل <code>python lan_host.py</code> ثم ابدأ المراقبة.<br>
+      ابعت لصاحبك <strong style="color:#86efac">رابط المتصفح</strong> اللي بيظهر تحت.
+    </p>
+
+    <div class="card">
+      <h2>① تشغيل السيرفر + رابط الصديق</h2>
+      <div id="status-pill" class="status-pill status-off">
+        <span class="dot"></span>
+        <span id="status-text">السيرفر متوقف</span>
+      </div>
+
+      <div class="row">
+        <input id="lan-ip" type="text" placeholder="IP (LAN أو Radmin)" value="127.0.0.1" />
+        <input id="lan-port" type="text" placeholder="المنفذ" value="27100" style="max-width:110px" />
+      </div>
+
+      <button class="btn btn-start" id="btn-start" type="button">▶ ابدأ المراقبة / اتصال بالسيرفر</button>
+      <button class="btn btn-stop" id="btn-stop" type="button" style="display:none">■ إيقاف المراقبة</button>
+
+      <div class="share-box" id="share-box">
+        <div class="share-label">🔗 رابط المتصفح — ابعت ده لصاحبك (Radmin / نفس الشبكة)</div>
+        <div class="share-url" id="share-url" title="اضغط للنسخ">http://127.0.0.1:27100/</div>
+        <button class="btn btn-copy" id="btn-copy-link" type="button">📋 نسخ الرابط للصديق</button>
+        <p class="share-hint">
+          صاحبك على <strong>Radmin</strong> أو نفس الواي فاي يفتح الرابط في المتصفح → هتشغّل اللعبة عنده مباشرة.<br>
+          غيّر الـ IP فوق أو اضغط chip من القائمة → الرابط يتحدّث فورًا.
+        </p>
+      </div>
+
+      <p class="hint">
+        1) شغّل: <code>python lan_host.py</code><br>
+        2) اضغط «ابدأ المراقبة» واختار IP (يفضّل IP شبكة Radmin لو صاحبك عليها)<br>
+        3) انسخ الرابط الأخضر وابعتّه لصاحبك<br>
+        4) للأونلاين بدون Radmin: <code>cloudflared tunnel --url http://localhost:27100</code>
+      </p>
+
+      <div id="ips-box" style="display:none;margin-top:14px">
+        <div style="color:#94a3b8;font-size:0.85rem;margin-bottom:6px">اختر IP (اضغط → يتحدد الرابط). أصفر غالبًا = Radmin:</div>
+        <div class="ip-list" id="ip-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>② سجل السيرفر</h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="card">
+      <h2>③ رمز اللوبي (نفس الرمز في اللعبة)</h2>
+      <p class="hint" style="margin-top:0">اكتب الرمز اللي هتستخدمه في إنشاء اللوبي:</p>
+      <div class="row">
+        <input id="room-code" type="text" placeholder="مثال: room123" maxlength="20" />
+      </div>
+      <div class="big-code" id="code-display">—</div>
+    </div>
+
+    <div class="card">
+      <h2>④ صاحبك على Radmin يدخل إزاي؟</h2>
+      <ol class="steps">
+        <li>أنت وهو على <strong>نفس شبكة Radmin</strong>.</li>
+        <li>تشغّل <code>python lan_host.py</code> وتفتح الصفحة دي.</li>
+        <li>تختار <strong>IP Radmin</strong> من القائمة (غالبًا يبدأ بـ 26.x أو مشابه).</li>
+        <li>تنسخ <strong>رابط المتصفح</strong> الأخضر وتبعتّه له (واتساب / ديسكورد).</li>
+        <li>هو يفتح الرابط في المتصفح → أونلاين → انضمام → LAN/Radmin → نفس الـ IP + الرمز + نفس ملف ZIP.</li>
+      </ol>
+      <p class="hint" style="margin-top:12px">
+        نعم: لو بعتّله الرابط وهو على Radmin معاك، اللعبة هتفتح عنده ويتصل بسيرفرك.
+      </p>
+      <a class="btn btn-link" id="open-game" href="http://127.0.0.1:27100/">فتح اللعبة من الرابط الحالي</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var logEl = document.getElementById('log');
+      var pill = document.getElementById('status-pill');
+      var statusText = document.getElementById('status-text');
+      var timer = null;
+      var failCount = 0;
+      var selectedIp = '127.0.0.1';
+
+      function ts() {
+        var d = new Date();
+        return [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (n) {
+          return (n < 10 ? '0' : '') + n;
+        }).join(':');
+      }
+
+      function log(msg, cls) {
+        var line = document.createElement('div');
+        line.className = cls || 'info';
+        line.textContent = '[' + ts() + '] ' + msg;
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function setStatus(kind, text) {
+        pill.className = 'status-pill status-' + kind;
+        statusText.textContent = text;
+      }
+
+      function portVal() {
+        return (document.getElementById('lan-port').value || '27100').trim() || '27100';
+      }
+
+      function normalizeHost(raw, port) {
+        var s = (raw || '').trim();
+        if (!s) return 'http://127.0.0.1:' + (port || '27100');
+        if (/^https?:\/\//i.test(s)) return s.replace(/\/$/, '');
+        if (s.indexOf(':') !== -1 && s.indexOf('/') === -1) return 'http://' + s;
+        if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(s) && !/^\d+\.\d+\.\d+\.\d+$/.test(s)) {
+          return 'https://' + s.replace(/\/$/, '');
+        }
+        return 'http://' + s + ':' + (port || '27100');
+      }
+
+      function baseUrl() {
+        var ip = document.getElementById('lan-ip').value;
+        return normalizeHost(ip, portVal());
+      }
+
+      function shareLink() {
+        var ip = (document.getElementById('lan-ip').value || '').trim() || '127.0.0.1';
+        // cloudflare full URL already
+        if (/^https?:\/\//i.test(ip)) return ip.replace(/\/$/, '') + '/';
+        if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(ip) && !/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
+          return 'https://' + ip.replace(/\/$/, '') + '/';
+        }
+        // host:port
+        if (ip.indexOf(':') !== -1 && ip.indexOf('/') === -1) return 'http://' + ip + '/';
+        return 'http://' + ip + ':' + portVal() + '/';
+      }
+
+      function updateShareUi() {
+        var url = shareLink();
+        var el = document.getElementById('share-url');
+        el.textContent = url;
+        var open = document.getElementById('open-game');
+        if (open) open.href = url;
+        // highlight active chip
+        var chips = document.querySelectorAll('.ip-chip');
+        var cur = (document.getElementById('lan-ip').value || '').trim();
+        chips.forEach(function (c) {
+          c.classList.toggle('active', c.getAttribute('data-ip') === cur);
+        });
+      }
+
+      function copyText(t, silent) {
+        function ok() {
+          if (!silent) log('تم نسخ: ' + t, 'ok');
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(t).then(ok).catch(function () {
+            try {
+              var ta = document.createElement('textarea');
+              ta.value = t;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              ok();
+            } catch (e) {}
+          });
+        } else {
+          try {
+            var ta2 = document.createElement('textarea');
+            ta2.value = t;
+            document.body.appendChild(ta2);
+            ta2.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta2);
+            ok();
+          } catch (e) {}
+        }
+      }
+
+      function looksRadmin(ip) {
+        // Common Radmin VPN ranges (26.x is classic Hamachi-like / Radmin often uses 26)
+        return /^(26\.|25\.|100\.)/.test(ip);
+      }
+
+      function renderIps(ips) {
+        var box = document.getElementById('ips-box');
+        var list = document.getElementById('ip-list');
+        list.innerHTML = '';
+        if (!ips || !ips.length) {
+          box.style.display = 'none';
+          return;
+        }
+        box.style.display = 'block';
+        // Always include 127.0.0.1 for local test
+        var all = ips.slice();
+        if (all.indexOf('127.0.0.1') === -1) all.unshift('127.0.0.1');
+        all.forEach(function (ip) {
+          var chip = document.createElement('span');
+          chip.className = 'ip-chip' + (looksRadmin(ip) ? ' radmin' : '');
+          chip.setAttribute('data-ip', ip);
+          chip.textContent = looksRadmin(ip) ? (ip + ' (Radmin?)') : ip;
+          chip.title = 'اختيار هذا الـ IP للرابط';
+          chip.onclick = function () {
+            document.getElementById('lan-ip').value = ip;
+            selectedIp = ip;
+            updateShareUi();
+            copyText(shareLink());
+            log('تم اختيار IP: ' + ip + ' → الرابط: ' + shareLink(), 'ok');
+          };
+          list.appendChild(chip);
+        });
+        updateShareUi();
+      }
+
+      function pollOnce() {
+        var url = baseUrl() + '/status';
+        fetch(url, { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (j) {
+          if (!j || !j.ok) throw new Error('bad');
+          failCount = 0;
+          setStatus('on', 'السيرفر شغال ✓ — ابعت الرابط الأخضر لصاحبك');
+          var rooms = (j.rooms || []).join(', ') || '(لا يوجد لوبيات بعد)';
+          log('OK | port=' + (j.port || '?') + ' | rooms: ' + rooms, 'ok');
+          if (j.ips) renderIps(j.ips);
+          updateShareUi();
+        }).catch(function () {
+          failCount++;
+          setStatus('err', 'مفيش سيرفر على العنوان ده');
+          if (failCount <= 3 || failCount % 5 === 0) {
+            log('فشل الاتصال بـ ' + baseUrl() + ' — شغّل: python lan_host.py', 'err');
+          }
+        });
+      }
+
+      function startWatch() {
+        stopWatch(true);
+        log('بدء مراقبة السيرفر على ' + baseUrl(), 'info');
+        setStatus('off', 'جاري الفحص...');
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('btn-stop').style.display = 'block';
+        updateShareUi();
+        pollOnce();
+        timer = setInterval(pollOnce, 2000);
+      }
+
+      function stopWatch(quiet) {
+        if (timer) clearInterval(timer);
+        timer = null;
+        document.getElementById('btn-start').style.display = 'block';
+        document.getElementById('btn-stop').style.display = 'none';
+        setStatus('off', 'المراقبة متوقفة');
+        if (!quiet) log('تم إيقاف المراقبة', 'warn');
+      }
+
+      document.getElementById('btn-start').onclick = startWatch;
+      document.getElementById('btn-stop').onclick = function () { stopWatch(false); };
+
+      document.getElementById('lan-ip').addEventListener('input', updateShareUi);
+      document.getElementById('lan-port').addEventListener('input', updateShareUi);
+
+      document.getElementById('share-url').onclick = function () {
+        copyText(shareLink());
+      };
+      document.getElementById('btn-copy-link').onclick = function () {
+        copyText(shareLink());
+      };
+
+      var roomInput = document.getElementById('room-code');
+      roomInput.addEventListener('input', function () {
+        var v = (roomInput.value || '').trim().toLowerCase().replace(/\s+/g, '') || '—';
+        document.getElementById('code-display').textContent = v;
+      });
+
+      // If opened from lan_host, prefill host
+      try {
+        if (location.protocol.indexOf('http') === 0 && location.hostname) {
+          document.getElementById('lan-ip').value = location.hostname;
+          if (location.port) document.getElementById('lan-port').value = location.port;
+        }
+      } catch (e) {}
+
+      updateShareUi();
+      log('لوحة السيرفر جاهزة.', 'info');
+      log('1) شغّل python lan_host.py', 'info');
+      log('2) اضغط ابدأ المراقبة → اختار IP Radmin → انسخ الرابط الأخضر', 'info');
+      log('3) ابعت الرابط لصاحبك على Radmin', 'info');
+
+      // Auto-start watch if served from host
+      try {
+        if (location.port === '27100' || location.port === String(27100)) {
+          setTimeout(startWatch, 400);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
