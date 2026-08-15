@@ -14518,16 +14518,20 @@
       pc.addEventListener('icegatheringstatechange', onCh);
       pc.addEventListener('icecandidate', onCand);
       // حد أقصى أطول عشان كل واجهات الشبكة (Radmin + WiFi)
-      setTimeout(finish, ms != null ? ms : 6000);
+      setTimeout(finish, ms != null ? ms : 12000);
     });
   }
 
 
   function rtcIceServers(preferRelay) {
+    // STUN + TURN — ضروري على GitHub Pages / شبكات مختلفة
     var list = [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
       {
         urls: [
           'turn:openrelay.metered.ca:80',
@@ -15681,6 +15685,12 @@
   }
 
   async function startManualRtcAsHost(code) {
+    // على https (GitHub Pages) فضّل TURN من الأول
+    try {
+      if (typeof location !== 'undefined' && location.protocol === 'https:' && !state._rtcPreferRelay) {
+        state._rtcPreferRelay = true;
+      }
+    } catch (ePref) {}
     // أول مرة: امسح كل حاجة وابدأ من صفر
     cleanupManualRtc();
     state.connections = [];
@@ -15752,7 +15762,7 @@
         }
         state._rtcPreferRelay = true;
         if (st) {
-          st.innerHTML = 'فشل ICE. جرّب: 1) افتح اللعبة من OPEN_GAME.bat مش من الملف مباشرة<br>2) اضغط الزر بالتحت لإعادة التوليد عبر TURN';
+          st.innerHTML = 'فشل ICE. جرّب:<br>1) اضغط «إعادة توليد عبر TURN» بالتحت<br>2) ابعت الأكواد كملف txt (مش نسخ شات)<br>3) أو الاتنين على Radmin ثم أعد التوليد';
         }
         toast('فشل ICE — افتح من OPEN_GAME.bat وأعد الأكواد بوضع TURN', 'error');
         try { ensureRtcRelayRetryButton(); } catch (eBtn) {}
@@ -15791,6 +15801,11 @@
   }
 
   async function startManualRtcAsJoiner(code) {
+    try {
+      if (typeof location !== 'undefined' && location.protocol === 'https:' && !state._rtcPreferRelay) {
+        state._rtcPreferRelay = true;
+      }
+    } catch (ePref) {}
     cleanupManualRtc();
     resetRtcExchangeUi();
     prepareManualRtcLobbyShell(false, code);
